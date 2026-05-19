@@ -1,8 +1,12 @@
 from flask import Flask, render_template, request, redirect
 import sqlite3
 import os
+import openai
 
 app = Flask(__name__)
+
+# Load API key
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 DB_PATH = "db.sqlite3"
 
@@ -61,6 +65,38 @@ def add():
     '''
 
 
+# 🤖 AI BLOG GENERATOR ROUTE
+@app.route("/generate", methods=["GET", "POST"])
+def generate():
+    if request.method == "POST":
+        topic = request.form["topic"]
+
+        response = openai.ChatCompletion.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "user", "content": f"Write a SEO optimized blog post about: {topic}"}
+            ]
+        )
+
+        content = response["choices"][0]["message"]["content"]
+
+        # simple title from topic
+        title = topic
+
+        db = get_db()
+        db.execute("INSERT INTO posts (title, content) VALUES (?, ?)", (title, content))
+        db.commit()
+
+        return redirect("/")
+
+    return '''
+    <h2>Generate AI Blog</h2>
+    <form method="post">
+        <input name="topic" placeholder="Enter topic"><br><br>
+        <button>Generate Blog</button>
+    </form>
+    '''
+
+
 if __name__ == "__main__":
-    import os
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    app.run(debug=True)
