@@ -1,16 +1,18 @@
-from openai import OpenAI
 from flask import Flask, render_template, request, redirect
 import sqlite3
 import os
 
+# ✅ SAFE IMPORT (NEW OPENAI)
+from openai import OpenAI
+
 app = Flask(__name__)
 
-# Load API key
-openai.api_key = os.getenv("OPENAI_API_KEY")
+# ✅ API KEY
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 DB_PATH = "db.sqlite3"
 
-# Create DB if not exists
+# ✅ Create DB if not exists
 if not os.path.exists(DB_PATH):
     conn = sqlite3.connect(DB_PATH)
     conn.execute("""
@@ -65,25 +67,25 @@ def add():
     '''
 
 
-# 🤖 AI BLOG GENERATOR ROUTE
+# 🤖 AI BLOG GENERATOR (SAFE VERSION)
 @app.route("/generate", methods=["GET", "POST"])
 def generate():
     if request.method == "POST":
         topic = request.form["topic"]
 
-        from openai import OpenAI
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        try:
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "user", "content": f"Write a SEO optimized blog post about: {topic}"}
+                ]
+            )
 
-response = client.chat.completions.create(
-    model="gpt-4o-mini",
-    messages=[
-        {"role": "user", "content": f"Write a SEO optimized blog post about: {topic}"}
-    ]
-)
+            content = response.choices[0].message.content
 
-content = response.choices[0].message.content
+        except Exception as e:
+            return f"Error: {str(e)}"
 
-        # simple title from topic
         title = topic
 
         db = get_db()
