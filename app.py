@@ -1,7 +1,7 @@
+from openai import OpenAI
 from flask import Flask, render_template, request, redirect
 import sqlite3
 import os
-import openai
 
 app = Flask(__name__)
 
@@ -71,14 +71,17 @@ def generate():
     if request.method == "POST":
         topic = request.form["topic"]
 
-        response = openai.ChatCompletion.create(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "user", "content": f"Write a SEO optimized blog post about: {topic}"}
-            ]
-        )
+        from openai import OpenAI
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-        content = response["choices"][0]["message"]["content"]
+response = client.chat.completions.create(
+    model="gpt-4o-mini",
+    messages=[
+        {"role": "user", "content": f"Write a SEO optimized blog post about: {topic}"}
+    ]
+)
+
+content = response.choices[0].message.content
 
         # simple title from topic
         title = topic
