@@ -1,18 +1,14 @@
 from flask import Flask, render_template, request, redirect
 import sqlite3
 import os
-
-# ✅ SAFE IMPORT (NEW OPENAI)
 from openai import OpenAI
 
 app = Flask(__name__)
 
-# ✅ API KEY
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 DB_PATH = "db.sqlite3"
 
-# ✅ Create DB if not exists
 if not os.path.exists(DB_PATH):
     conn = sqlite3.connect(DB_PATH)
     conn.execute("""
@@ -67,7 +63,6 @@ def add():
     '''
 
 
-# 🤖 AI BLOG GENERATOR (SAFE VERSION)
 @app.route("/generate", methods=["GET", "POST"])
 def generate():
     if request.method == "POST":
@@ -86,10 +81,8 @@ def generate():
         except Exception as e:
             return f"Error: {str(e)}"
 
-        title = topic
-
         db = get_db()
-        db.execute("INSERT INTO posts (title, content) VALUES (?, ?)", (title, content))
+        db.execute("INSERT INTO posts (title, content) VALUES (?, ?)", (topic, content))
         db.commit()
 
         return redirect("/")
@@ -104,4 +97,4 @@ def generate():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run()
