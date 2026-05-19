@@ -4,7 +4,7 @@ from flask import Flask, render_template, request
 
 app = Flask(__name__)
 
-# ✅ Set API Key from Render Environment
+# ✅ API Key
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 
@@ -14,16 +14,21 @@ def home():
     return render_template("index.html")
 
 
-# ✅ Generate Blog Route
+# ✅ ADD NEW POST PAGE (FIX FOR YOUR ERROR)
+@app.route("/add")
+def add_post():
+    return render_template("index.html")
+
+
+# ✅ GENERATE BLOG
 @app.route("/generate", methods=["POST"])
 def generate():
     try:
         topic = request.form.get("topic")
 
         if not topic:
-            return "❌ Please enter a topic"
+            return "Please enter a topic"
 
-        # ✅ OpenAI API Call
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[
@@ -36,12 +41,8 @@ def generate():
         return render_template("result.html", content=content)
 
     except Exception as e:
-        return f"❌ Error: {str(e)}"
+        return f"Error: {str(e)}"
 
 
-# ✅ Run App (for local testing)
 if __name__ == "__main__":
     app.run(debug=True)
-@app.route("/add")
-def add_post():
-    return render_template("index.html")
