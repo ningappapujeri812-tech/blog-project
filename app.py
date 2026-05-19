@@ -42,3 +42,6 @@ def generate():
 # ✅ Run App (for local testing)
 if __name__ == "__main__":
     app.run(debug=True)
+@app.route("/add")
+def add_post():
+    return render_template("index.html")
